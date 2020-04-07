@@ -1,8 +1,13 @@
 [package]
 name = "cmsutil"
 version = "0.1.0"
-authors = ["Dmitry Pankratov <dmitry@pankratov.net>"]
+authors = ["Dmitry Pankratov <dmitry@everyoneprint.com>"]
 edition = "2018"
+
+[profile.release]
+opt-level = "z"
+lto = true
+panic = "abort"
 
 [dependencies]
 wincms = { git = "ssh://git@dev1.everyoneprint.com:7999/eopng/wincms.git", branch = "dev" }

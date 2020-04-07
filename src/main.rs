@@ -25,6 +25,13 @@ struct AppParams {
     )]
     store_type: Option<CertStoreType>,
 
+    #[structopt(
+        short = "f",
+        long = "pfx",
+        help = "Use a given PFX/PKCS12 file as a certificate store"
+    )]
+    pfx_file: Option<PathBuf>,
+
     #[structopt(short = "i", long = "in", help = "Input file")]
     input_file: PathBuf,
 
@@ -50,8 +57,16 @@ fn main() -> Result<(), Box<dyn Error>> {
     let input_file = fs::File::open(&args.input_file)?;
     let mmap = unsafe { memmap::MmapOptions::new().map(&input_file)? };
 
-    let store_type = args.store_type.unwrap_or(CertStoreType::CurrentUser);
-    let store = CertStore::open(store_type, "my")?;
+    let store = if let Some(ref path) = args.pfx_file {
+        let pfx_data = fs::read(path)?;
+        CertStore::from_pfx(
+            &pfx_data,
+            args.pin.as_ref().map(AsRef::as_ref).unwrap_or(""),
+        )?
+    } else {
+        let store_type = args.store_type.unwrap_or(CertStoreType::CurrentUser);
+        CertStore::open(store_type, "my")?
+    };
 
     let mut signer = store.find_cert_by_subject_str(&args.signer)?;
     debug!("Acquired signer certificate for {}", args.signer);
@@ -76,8 +91,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         .signer(signer)
         .recipients(recipients);
 
-    if let Some(pin) = args.pin {
-        builder = builder.password(pin);
+    if args.pfx_file.is_none() {
+        if let Some(pin) = args.pin {
+            builder = builder.password(pin);
+        }
     }
 
     let content = builder.build()?;
