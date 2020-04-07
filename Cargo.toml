@@ -10,7 +10,7 @@ lto = true
 panic = "abort"
 
 [dependencies]
-wincms = { git = "ssh://dev1.everyoneprint.com:7999/eopng/wincms.git", branch = "dev" }
+wincms = { git = "ssh://git@dev1.everyoneprint.com:7999/eopng/wincms.git", branch = "dev" }
 structopt = "0.3"
 memmap = "0.7"
 log = "0.4"
