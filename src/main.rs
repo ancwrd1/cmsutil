@@ -1,4 +1,10 @@
-use std::{error::Error, fs, path::PathBuf};
+use std::{
+    error::Error,
+    fs,
+    io::{self, Read, Write},
+    ops::Deref,
+    path::PathBuf,
+};
 
 use log::debug;
 use structopt::StructOpt;
@@ -12,7 +18,11 @@ use wincms::cng::*;
     author = "Dmitry Pankratov"
 )]
 struct AppParams {
-    #[structopt(short = "p", long = "pin", help = "Smart card pin")]
+    #[structopt(
+        short = "p",
+        long = "password",
+        help = "Smart card pin or PFX password"
+    )]
     pin: Option<String>,
 
     #[structopt(short = "q", long = "quiet", help = "Disable Windows CSP UI prompts")]
@@ -28,15 +38,15 @@ struct AppParams {
     #[structopt(
         short = "f",
         long = "pfx",
-        help = "Use a given PFX/PKCS12 file as a certificate store"
+        help = "Use PFX/PKCS12 file as a certificate store"
     )]
     pfx_file: Option<PathBuf>,
 
     #[structopt(short = "i", long = "in", help = "Input file")]
-    input_file: PathBuf,
+    input_file: Option<PathBuf>,
 
     #[structopt(short = "o", long = "out", help = "Output file")]
-    output_file: PathBuf,
+    output_file: Option<PathBuf>,
 
     #[structopt(short = "s", long = "signer", help = "Signer certificate ID")]
     signer: String,
@@ -49,13 +59,36 @@ struct AppParams {
     recipients: Vec<String>,
 }
 
+enum MessageSource {
+    File(memmap::Mmap),
+    Stdin(Vec<u8>),
+}
+
+impl Deref for MessageSource {
+    type Target = [u8];
+
+    fn deref(&self) -> &Self::Target {
+        match self {
+            MessageSource::File(mmap) => &mmap,
+            MessageSource::Stdin(data) => &data,
+        }
+    }
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     let args: AppParams = AppParams::from_args();
 
     env_logger::init();
 
-    let input_file = fs::File::open(&args.input_file)?;
-    let mmap = unsafe { memmap::MmapOptions::new().map(&input_file)? };
+    let source = if let Some(input_file) = args.input_file {
+        let input_file = fs::File::open(&input_file)?;
+        let mmap = unsafe { memmap::MmapOptions::new().map(&input_file)? };
+        MessageSource::File(mmap)
+    } else {
+        let mut data = Vec::new();
+        io::stdin().read_to_end(&mut data)?;
+        MessageSource::Stdin(data)
+    };
 
     let store = if let Some(ref path) = args.pfx_file {
         let pfx_data = fs::read(path)?;
@@ -98,9 +131,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     let content = builder.build()?;
-    let data = content.sign_and_encrypt(&mmap)?;
+    let data = content.sign_and_encrypt(&source)?;
 
-    fs::write(args.output_file, &data)?;
+    if let Some(output_file) = args.output_file {
+        fs::write(output_file, &data)?;
+    } else {
+        io::stdout().write_all(&data)?;
+    }
 
     Ok(())
 }
