@@ -9,7 +9,10 @@ use std::{
 use log::debug;
 use structopt::StructOpt;
 
-use wincms::cng::*;
+use wincms::{
+    cms::CmsContent,
+    cng::{CertStore, CertStoreType},
+};
 
 #[derive(StructOpt)]
 #[structopt(
@@ -120,13 +123,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     // let raw_key = NCryptKey::open(&key_prov, &key_name)?;
     // CertStore::open(CertStoreType::LocalMachine, "my")?.add_cert(&raw_cert, Some(raw_key))?;
 
-    let mut builder = wincms::cms::CmsContent::builder()
-        .signer(signer)
-        .recipients(recipients);
+    let builder = CmsContent::builder().signer(signer).recipients(recipients);
 
     if args.pfx_file.is_none() {
         if let Some(pin) = args.pin {
-            builder = builder.password(pin);
+            key.set_pin(&pin)?;
+            debug!("Pin code set");
         }
     }
 
