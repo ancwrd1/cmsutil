@@ -123,8 +123,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     // let raw_key = NCryptKey::open(&key_prov, &key_name)?;
     // CertStore::open(CertStoreType::LocalMachine, "my")?.add_cert(&raw_cert, Some(raw_key))?;
 
-    let builder = CmsContent::builder().signer(signer).recipients(recipients);
-
     if args.pfx_file.is_none() {
         if let Some(pin) = args.pin {
             key.set_pin(&pin)?;
@@ -132,7 +130,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     }
 
-    let content = builder.build()?;
+    let content = CmsContent::builder()
+        .signer(signer)
+        .recipients(recipients)
+        .build()?;
+
     let data = content.sign_and_encrypt(&source)?;
 
     if let Some(output_file) = args.output_file {
