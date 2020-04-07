@@ -3,10 +3,7 @@ use std::{error::Error, fs, path::PathBuf};
 use log::debug;
 use structopt::StructOpt;
 
-pub mod cms;
-pub mod cng;
-
-use cng::*;
+use wincms::cng::*;
 
 #[derive(StructOpt)]
 #[structopt(
@@ -26,7 +23,7 @@ struct AppParams {
         long = "store-type",
         help = "Certificate store type, one of: machine, user, service"
     )]
-    store_type: Option<cng::CertStoreType>,
+    store_type: Option<CertStoreType>,
 
     #[structopt(short = "i", long = "in", help = "Input file")]
     input_file: PathBuf,
@@ -75,7 +72,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     // let raw_key = NCryptKey::open(&key_prov, &key_name)?;
     // CertStore::open(CertStoreType::LocalMachine, "my")?.add_cert(&raw_cert, Some(raw_key))?;
 
-    let mut builder = cms::CmsContent::builder()
+    let mut builder = wincms::cms::CmsContent::builder()
         .signer(signer)
         .recipients(recipients);
 

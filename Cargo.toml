@@ -1,16 +1,11 @@
 [package]
-name = "cms_cng"
+name = "cmsutil"
 version = "0.1.0"
 authors = ["Dmitry Pankratov <dmitry@pankratov.net>"]
 edition = "2018"
 
-[[bin]]
-name = "cmsutil"
-path = "src/main.rs"
-
 [dependencies]
-winapi = { version = "0.3", features = ["wincrypt", "ncrypt", "errhandlingapi", "winerror"] }
-widestring = "0.4"
+wincms = { git = "ssh://git@dev1.everyoneprint.com:7999/eopng/wincms.git", branch = "dev" }
 structopt = "0.3"
 memmap = "0.7"
 log = "0.4"
