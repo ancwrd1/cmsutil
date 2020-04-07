@@ -153,7 +153,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             let content = CmsContent::builder()
                 .signer(signer)
                 .recipients(recipients)
-                .build()?;
+                .build();
 
             let data = content.sign_and_encrypt(&source)?;
 

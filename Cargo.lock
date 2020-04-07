@@ -361,7 +361,7 @@ checksum = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
 [[package]]
 name = "wincms"
 version = "0.1.0"
-source = "git+ssh://git@dev1.everyoneprint.com:7999/eopng/wincms.git?branch=dev#84120722360864a363e9c26a4e1262b248d64dd1"
+source = "git+ssh://git@dev1.everyoneprint.com:7999/eopng/wincms.git?branch=dev#0e32f69e95446fb1f6a7f8e22e575d00accbca94"
 dependencies = [
  "log",
  "widestring",
