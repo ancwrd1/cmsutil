@@ -10,7 +10,7 @@ use log::debug;
 use structopt::StructOpt;
 
 use wincms::{
-    cert::{CertContext, CertStore, CertStoreType, NCryptKey},
+    cert::{CertContext, CertStore, CertStoreType},
     cms::CmsContent,
 };
 
@@ -101,13 +101,10 @@ impl Deref for MessageSource {
     }
 }
 
-fn get_cert_with_key(certs: &mut [CertContext], silent: bool) -> Option<(CertContext, NCryptKey)> {
-    for cert in certs {
-        if let Ok(key) = cert.acquire_key(silent) {
-            return Some((cert.clone(), key));
-        }
-    }
-    None
+fn get_cert_with_key(certs: &mut [CertContext], silent: bool) -> Option<CertContext> {
+    certs
+        .iter_mut()
+        .find_map(|cert| cert.acquire_key(silent).map(|_| cert.clone()).ok())
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -140,7 +137,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         CmsCommand::Encode(ref cmd) => {
             let mut signers = store.find_cert_by_subject_str(&cmd.signer)?;
 
-            if let Some((signer, key)) = get_cert_with_key(&mut signers, args.silent) {
+            if let Some(signer) = get_cert_with_key(&mut signers, args.silent) {
                 debug!("Acquired signer certificate for {}", cmd.signer);
 
                 let mut recipients = Vec::new();
@@ -149,6 +146,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 }
                 debug!("Acquired {} recipient certificate(s)", recipients.len());
 
+                let key = signer.key().clone().unwrap();
                 let key_prov = key.get_provider()?;
                 let key_name = key.get_name()?;
                 debug!("Acquired private key: {}: {}", key_prov, key_name);
@@ -181,9 +179,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
         CmsCommand::Decode(ref cmd) => {
             let mut recipients = store.find_cert_by_subject_str(&cmd.recipient)?;
-            if let Some((_, key)) = get_cert_with_key(&mut recipients, args.silent) {
+            if let Some(cert) = get_cert_with_key(&mut recipients, args.silent) {
                 debug!("Acquired recipient certificate for {}", cmd.recipient);
 
+                let key = cert.key().clone().unwrap();
                 let key_prov = key.get_provider()?;
                 let key_name = key.get_name()?;
                 debug!("Acquired private key: {}: {}", key_prov, key_name);
