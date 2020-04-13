@@ -9,6 +9,7 @@ use std::{
 use log::debug;
 use structopt::StructOpt;
 
+use wincms::cng::{CertContext, NCryptKey};
 use wincms::{
     cms::CmsContent,
     cng::{CertStore, CertStoreType},
@@ -101,6 +102,15 @@ impl Deref for MessageSource {
     }
 }
 
+fn get_cert_with_key(certs: &mut [CertContext], silent: bool) -> Option<(CertContext, NCryptKey)> {
+    for cert in certs {
+        if let Ok(key) = cert.acquire_key(silent) {
+            return Some((cert.clone(), key));
+        }
+    }
+    None
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     let args: AppParams = AppParams::from_args();
 
@@ -129,62 +139,75 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     match args.command {
         CmsCommand::Encode(ref cmd) => {
-            let mut signer = store.find_cert_by_subject_str(&cmd.signer)?;
-            debug!("Acquired signer certificate for {}", cmd.signer);
+            let mut signers = store.find_cert_by_subject_str(&cmd.signer)?;
 
-            let mut recipients = Vec::new();
-            for rcpt in &cmd.recipients {
-                recipients.push(store.find_cert_by_subject_str(rcpt)?);
-                debug!("Acquired recipient certificate for {}", rcpt);
-            }
+            if let Some((signer, key)) = get_cert_with_key(&mut signers, args.silent) {
+                debug!("Acquired signer certificate for {}", cmd.signer);
 
-            let key = signer.acquire_key(args.silent)?;
-            let key_prov = key.get_provider()?;
-            let key_name = key.get_name()?;
-            debug!("Acquired private key: {}: {}", key_prov, key_name);
-
-            if args.pfx_file.is_none() {
-                if let Some(pin) = args.pin {
-                    key.set_pin(&pin)?;
-                    debug!("Pin code set");
+                let mut recipients = Vec::new();
+                for rcpt in &cmd.recipients {
+                    recipients.extend(store.find_cert_by_subject_str(rcpt)?.into_iter());
                 }
-            }
+                debug!("Acquired {} recipient certificate(s)", recipients.len());
 
-            let content = CmsContent::builder()
-                .signer(signer)
-                .recipients(recipients)
-                .build();
+                let key_prov = key.get_provider()?;
+                let key_name = key.get_name()?;
+                debug!("Acquired private key: {}: {}", key_prov, key_name);
 
-            let data = content.sign_and_encrypt(&source)?;
+                if args.pfx_file.is_none() {
+                    if let Some(pin) = args.pin {
+                        key.set_pin(&pin)?;
+                        debug!("Pin code set");
+                    }
+                }
 
-            if let Some(output_file) = args.output_file {
-                fs::write(output_file, &data)?;
+                let content = CmsContent::builder()
+                    .signer(signer)
+                    .recipients(recipients)
+                    .build();
+
+                let data = content.sign_and_encrypt(&source)?;
+
+                if let Some(output_file) = args.output_file {
+                    fs::write(output_file, &data)?;
+                } else {
+                    io::stdout().write_all(&data)?;
+                }
             } else {
-                io::stdout().write_all(&data)?;
+                return Err(Box::new(io::Error::new(
+                    io::ErrorKind::Other,
+                    format!("Cannot find signer certificate for {}", cmd.signer),
+                )));
             }
         }
         CmsCommand::Decode(ref cmd) => {
-            let mut recipient = store.find_cert_by_subject_str(&cmd.recipient)?;
-            debug!("Acquired recipient certificate for {}", cmd.recipient);
+            let mut recipients = store.find_cert_by_subject_str(&cmd.recipient)?;
+            if let Some((_, key)) = get_cert_with_key(&mut recipients, args.silent) {
+                debug!("Acquired recipient certificate for {}", cmd.recipient);
 
-            let key = recipient.acquire_key(args.silent)?;
-            let key_prov = key.get_provider()?;
-            let key_name = key.get_name()?;
-            debug!("Acquired private key: {}: {}", key_prov, key_name);
+                let key_prov = key.get_provider()?;
+                let key_name = key.get_name()?;
+                debug!("Acquired private key: {}: {}", key_prov, key_name);
 
-            if args.pfx_file.is_none() {
-                if let Some(pin) = args.pin {
-                    key.set_pin(&pin)?;
-                    debug!("Pin code set");
+                if args.pfx_file.is_none() {
+                    if let Some(pin) = args.pin {
+                        key.set_pin(&pin)?;
+                        debug!("Pin code set");
+                    }
                 }
-            }
 
-            let data = CmsContent::decrypt_and_verify(&store, &source)?;
+                let data = CmsContent::decrypt_and_verify(&store, &source)?;
 
-            if let Some(output_file) = args.output_file {
-                fs::write(output_file, &data)?;
+                if let Some(output_file) = args.output_file {
+                    fs::write(output_file, &data)?;
+                } else {
+                    io::stdout().write_all(&data)?;
+                }
             } else {
-                io::stdout().write_all(&data)?;
+                return Err(Box::new(io::Error::new(
+                    io::ErrorKind::Other,
+                    format!("Cannot find recipient certificate for {}", cmd.recipient),
+                )));
             }
         }
     }
