@@ -9,10 +9,9 @@ use std::{
 use log::debug;
 use structopt::StructOpt;
 
-use wincms::cng::{CertContext, NCryptKey};
 use wincms::{
+    cert::{CertContext, CertStore, CertStoreType, NCryptKey},
     cms::CmsContent,
-    cng::{CertStore, CertStoreType},
 };
 
 #[derive(StructOpt)]
