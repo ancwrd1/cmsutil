@@ -16,9 +16,9 @@ use wincms::{
 
 #[derive(StructOpt)]
 #[structopt(
-    about = "CMS encoding utility",
+    about = "CMS encoding utility to sign/encrypt or decrypt/verify a CMS-encoded message",
     name = "cmsutil",
-    author = "Dmitry Pankratov"
+    author = "Written by Dmitry Pankratov <dmitry@everyoneprint.com>"
 )]
 struct AppParams {
     #[structopt(
@@ -48,10 +48,20 @@ struct AppParams {
     )]
     pfx_file: Option<PathBuf>,
 
-    #[structopt(short = "i", long = "in", global = true, help = "Input file")]
+    #[structopt(
+        short = "i",
+        long = "in",
+        global = true,
+        help = "Input file [default: stdin]"
+    )]
     input_file: Option<PathBuf>,
 
-    #[structopt(short = "o", long = "out", global = true, help = "Output file")]
+    #[structopt(
+        short = "o",
+        long = "out",
+        global = true,
+        help = "Output file [default: stfdout]"
+    )]
     output_file: Option<PathBuf>,
 
     #[structopt(subcommand)]
