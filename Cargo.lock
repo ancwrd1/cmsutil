@@ -115,9 +115,9 @@ checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 
 [[package]]
 name = "libc"
-version = "0.2.68"
+version = "0.2.69"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dea0c0405123bba743ee3f91f49b1c7cfb684eef0da0a50110f758ccf24cdff0"
+checksum = "99e85c08494b21a9054e7fe1374a732aeadaff3980b6990b94bfd3a70f690005"
 
 [[package]]
 name = "log"
@@ -361,7 +361,7 @@ checksum = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
 [[package]]
 name = "wincms"
 version = "0.1.0"
-source = "git+ssh://git@dev1.everyoneprint.com:7999/eopng/wincms.git?branch=dev#9e10ff1d10c2ac75f689a6329ba227550d4aa23a"
+source = "git+ssh://git@dev1.everyoneprint.com:7999/eopng/wincms.git?branch=dev#a6953d9522140f18b5742a03e7a1d362b0dbc5c2"
 dependencies = [
  "log",
  "widestring",
