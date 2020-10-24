@@ -7,91 +7,91 @@ use std::{
 };
 
 use log::debug;
-use structopt::StructOpt;
+use clap::Clap;
 
 use wincms::{
     cert::{CertContext, CertStore, CertStoreType},
     cms::CmsContent,
 };
 
-#[derive(StructOpt)]
-#[structopt(
+#[derive(Clap)]
+#[clap(
     about = "CMS encoding utility to sign/encrypt or decrypt/verify a CMS-encoded message",
     name = "cmsutil",
     author = "Written by Dmitry Pankratov <dmitry@everyoneprint.com>"
 )]
 struct AppParams {
-    #[structopt(
-        short = "p",
+    #[clap(
+        short = 'p',
         long = "password",
         global = true,
-        help = "Smart card pin or PFX password"
+        about = "Smart card pin or PFX password"
     )]
     pin: Option<String>,
 
-    #[structopt(short = "q", long = "quiet", help = "Disable Windows CSP UI prompts")]
+    #[clap(short = 'q', long = "quiet", about = "Disable Windows CSP UI prompts")]
     silent: bool,
 
-    #[structopt(
-        short = "t",
+    #[clap(
+        short = 't',
         long = "store-type",
         global = true,
-        help = "Certificate store type, one of: machine, user, service"
+        about = "Certificate store type, one of: machine, user, service"
     )]
     store_type: Option<CertStoreType>,
 
-    #[structopt(
-        short = "f",
+    #[clap(
+        short = 'f',
         long = "pfx",
         global = true,
-        help = "Use PFX/PKCS12 file as a certificate store"
+        about = "Use PFX/PKCS12 file as a certificate store"
     )]
     pfx_file: Option<PathBuf>,
 
-    #[structopt(
-        short = "i",
+    #[clap(
+        short = 'i',
         long = "in",
         global = true,
-        help = "Input file [default: stdin]"
+        about = "Input file [default: stdin]"
     )]
     input_file: Option<PathBuf>,
 
-    #[structopt(
-        short = "o",
+    #[clap(
+        short = 'o',
         long = "out",
         global = true,
-        help = "Output file [default: stfdout]"
+        about = "Output file [default: stfdout]"
     )]
     output_file: Option<PathBuf>,
 
-    #[structopt(subcommand)]
+    #[clap(subcommand)]
     command: CmsCommand,
 }
 
-#[derive(StructOpt)]
+#[derive(Clap)]
 enum CmsCommand {
-    #[structopt(name = "encode", about = "Sign and encrypt data")]
+    #[clap(name = "encode", about = "Sign and encrypt data")]
     Encode(CmsEncodeCmd),
-    #[structopt(name = "decode", about = "Decrypt and verify data")]
+    #[clap(name = "decode", about = "Decrypt and verify data")]
     Decode(CmsDecodeCmd),
 }
 
-#[derive(StructOpt)]
+#[derive(Clap)]
 struct CmsEncodeCmd {
-    #[structopt(short = "s", long = "signer", help = "Signer certificate ID")]
+    #[clap(short = 's', long = "signer", about = "Signer certificate ID")]
     signer: String,
 
-    #[structopt(
+    #[clap(
         index = 1,
         required = true,
-        help = "One or more recipient certificate IDs"
+        about = "One or more recipient certificate IDs"
     )]
     recipients: Vec<String>,
 }
 
-#[derive(StructOpt)]
+#[derive(Clap)]
 struct CmsDecodeCmd {
-    #[structopt(index = 1, required = true, help = "Recipient certificate ID")]
+    #[clap(index = 1, required = true, about = "Recipient certificate ID")]
     recipient: String,
 }
 
@@ -118,7 +118,7 @@ fn get_cert_with_key(certs: &mut [CertContext], silent: bool) -> Option<CertCont
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let args: AppParams = AppParams::from_args();
+    let args: AppParams = AppParams::parse();
 
     env_logger::init();
 
