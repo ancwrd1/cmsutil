@@ -156,7 +156,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 }
                 debug!("Acquired {} recipient certificate(s)", recipients.len());
 
-                let key = signer.key().clone().unwrap();
+                let key = signer.key().unwrap();
                 let key_prov = key.get_provider()?;
                 let key_name = key.get_name()?;
                 debug!("Acquired private key: {}: {}", key_prov, key_name);
@@ -192,7 +192,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             if let Some(cert) = get_cert_with_key(&mut recipients, args.silent) {
                 debug!("Acquired recipient certificate for {}", cmd.recipient);
 
-                let key = cert.key().clone().unwrap();
+                let key = cert.key().unwrap();
                 let key_prov = key.get_provider()?;
                 let key_name = key.get_name()?;
                 debug!("Acquired private key: {}: {}", key_prov, key_name);
