@@ -7,14 +7,14 @@ use std::{
 };
 
 use log::debug;
-use clap::Clap;
+use clap::Parser;
 
 use wincms::{
     cert::{CertContext, CertStore, CertStoreType},
     cms::CmsContent,
 };
 
-#[derive(Clap)]
+#[derive(Parser)]
 #[clap(
     about = "CMS encoding utility to sign/encrypt or decrypt/verify a CMS-encoded message",
     name = "cmsutil",
@@ -68,7 +68,7 @@ struct AppParams {
     command: CmsCommand,
 }
 
-#[derive(Clap)]
+#[derive(Parser)]
 enum CmsCommand {
     #[clap(name = "encode", about = "Sign and encrypt data")]
     Encode(CmsEncodeCmd),
@@ -76,7 +76,7 @@ enum CmsCommand {
     Decode(CmsDecodeCmd),
 }
 
-#[derive(Clap)]
+#[derive(Parser)]
 struct CmsEncodeCmd {
     #[clap(short = 's', long = "signer", about = "Signer certificate ID")]
     signer: String,
@@ -89,7 +89,7 @@ struct CmsEncodeCmd {
     recipients: Vec<String>,
 }
 
-#[derive(Clap)]
+#[derive(Parser)]
 struct CmsDecodeCmd {
     #[clap(index = 1, required = true, about = "Recipient certificate ID")]
     recipient: String,
