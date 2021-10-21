@@ -105,8 +105,8 @@ impl Deref for MessageSource {
 
     fn deref(&self) -> &Self::Target {
         match self {
-            MessageSource::File(mmap) => &mmap,
-            MessageSource::Stdin(data) => &data,
+            MessageSource::File(mmap) => mmap,
+            MessageSource::Stdin(data) => data,
         }
     }
 }
