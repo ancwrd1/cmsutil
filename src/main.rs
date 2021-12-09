@@ -25,7 +25,7 @@ struct AppParams {
         short = 'p',
         long = "password",
         global = true,
-        about = "Smart card pin or PFX password"
+        help = "Smart card pin or PFX password"
     )]
     pin: Option<String>,
 
@@ -36,7 +36,7 @@ struct AppParams {
         short = 't',
         long = "store-type",
         global = true,
-        about = "Certificate store type, one of: machine, user, service"
+        help = "Certificate store type, one of: machine, user, service"
     )]
     store_type: Option<CertStoreType>,
 
@@ -44,7 +44,7 @@ struct AppParams {
         short = 'f',
         long = "pfx",
         global = true,
-        about = "Use PFX/PKCS12 file as a certificate store"
+        help = "Use PFX/PKCS12 file as a certificate store"
     )]
     pfx_file: Option<PathBuf>,
 
@@ -52,7 +52,7 @@ struct AppParams {
         short = 'i',
         long = "in",
         global = true,
-        about = "Input file [default: stdin]"
+        help = "Input file [default: stdin]"
     )]
     input_file: Option<PathBuf>,
 
@@ -60,7 +60,7 @@ struct AppParams {
         short = 'o',
         long = "out",
         global = true,
-        about = "Output file [default: stfdout]"
+        help = "Output file [default: stfdout]"
     )]
     output_file: Option<PathBuf>,
 
