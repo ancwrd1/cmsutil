@@ -11,7 +11,7 @@ panic = "abort"
 
 [dependencies]
 wincms = { git = "ssh://gitea@dev1.everyoneprint.com:3022/EveryonePrint/wincms.git", branch = "dev" }
-clap = { version = "3.0.0-rc.1", features = ["std", "derive"] }
+clap = { version = "3.0.0-rc.3", features = ["std", "derive"] }
 memmap = "0.7"
 log = "0.4"
 env_logger = "0.9"
