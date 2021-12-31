@@ -29,7 +29,7 @@ struct AppParams {
     )]
     pin: Option<String>,
 
-    #[clap(short = 'q', long = "quiet", about = "Disable Windows CSP UI prompts")]
+    #[clap(short = 'q', long = "quiet", help = "Disable Windows CSP UI prompts")]
     silent: bool,
 
     #[clap(
@@ -78,20 +78,20 @@ enum CmsCommand {
 
 #[derive(Parser)]
 struct CmsEncodeCmd {
-    #[clap(short = 's', long = "signer", about = "Signer certificate ID")]
+    #[clap(short = 's', long = "signer", help = "Signer certificate ID")]
     signer: String,
 
     #[clap(
         index = 1,
         required = true,
-        about = "One or more recipient certificate IDs"
+        help = "One or more recipient certificate IDs"
     )]
     recipients: Vec<String>,
 }
 
 #[derive(Parser)]
 struct CmsDecodeCmd {
-    #[clap(index = 1, required = true, about = "Recipient certificate ID")]
+    #[clap(index = 1, required = true, help = "Recipient certificate ID")]
     recipient: String,
 }
 
