@@ -6,9 +6,8 @@ use std::{
     path::PathBuf,
 };
 
-use log::debug;
 use clap::Parser;
-
+use log::debug;
 use wincms::{
     cert::{CertContext, CertStore, CertStoreType},
     cms::CmsContent,
@@ -17,8 +16,7 @@ use wincms::{
 #[derive(Parser)]
 #[clap(
     about = "CMS encoding utility to sign/encrypt or decrypt/verify a CMS-encoded message",
-    name = "cmsutil",
-    author = "Written by Dmitry Pankratov <dmitry@everyoneprint.com>"
+    name = "cmsutil"
 )]
 struct AppParams {
     #[clap(

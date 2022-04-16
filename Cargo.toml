@@ -1,16 +1,10 @@
 [package]
 name = "cmsutil"
 version = "0.1.0"
-authors = ["Dmitry Pankratov <dmitry@everyoneprint.com>"]
 edition = "2021"
 
-[profile.release]
-opt-level = "z"
-lto = true
-panic = "abort"
-
 [dependencies]
-wincms = { git = "ssh://gitea@dev1.everyoneprint.com:3022/EveryonePrint/wincms.git", branch = "dev" }
+wincms = { git = "https://github.com/ancwrd1/wincms.git", branch = "dev" }
 clap = { version = "3", features = ["std", "derive"] }
 memmap = "0.7"
 log = "0.4"
