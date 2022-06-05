@@ -132,7 +132,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let store = if let Some(ref path) = args.pfx_file {
         let pfx_data = fs::read(path)?;
-        CertStore::from_pfx(
+        CertStore::from_pkcs12(
             &pfx_data,
             args.pin.as_ref().map(AsRef::as_ref).unwrap_or(""),
         )?
@@ -155,7 +155,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 debug!("Acquired {} recipient certificate(s)", recipients.len());
 
                 let key = signer.key().unwrap();
-                let key_prov = key.get_provider()?;
+                let key_prov = key.get_provider_name()?;
                 let key_name = key.get_name()?;
                 debug!("Acquired private key: {}: {}", key_prov, key_name);
 
@@ -191,7 +191,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 debug!("Acquired recipient certificate for {}", cmd.recipient);
 
                 let key = cert.key().unwrap();
-                let key_prov = key.get_provider()?;
+                let key_prov = key.get_provider_name()?;
                 let key_name = key.get_name()?;
                 debug!("Acquired private key: {}: {}", key_prov, key_name);
 
