@@ -8,4 +8,4 @@ wincms = { git = "https://github.com/ancwrd1/wincms.git", branch = "dev" }
 clap = { version = "4", features = ["std", "derive"] }
 memmap = "0.7"
 log = "0.4"
-env_logger = "0.9"
+env_logger = "0.10"
