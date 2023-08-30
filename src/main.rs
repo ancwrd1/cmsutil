@@ -94,7 +94,7 @@ struct CmsDecodeCmd {
 }
 
 enum MessageSource {
-    File(memmap::Mmap),
+    File(memmap2::Mmap),
     Stdin(Vec<u8>),
 }
 
@@ -122,7 +122,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let source = if let Some(input_file) = args.input_file {
         let input_file = fs::File::open(input_file)?;
-        let mmap = unsafe { memmap::MmapOptions::new().map(&input_file)? };
+        let mmap = unsafe { memmap2::MmapOptions::new().map(&input_file)? };
         MessageSource::File(mmap)
     } else {
         let mut data = Vec::new();
