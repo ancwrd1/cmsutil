@@ -77,7 +77,7 @@ enum CmsCommand {
 #[derive(Parser)]
 struct CmsEncodeCmd {
     #[clap(short = 's', long = "signer", help = "Signer certificate ID")]
-    signer: String,
+    signer: Option<String>,
 
     #[clap(
         index = 1,
@@ -89,6 +89,9 @@ struct CmsEncodeCmd {
 
 #[derive(Parser)]
 struct CmsDecodeCmd {
+    #[clap(short = 'v', long = "verify", help = "Verify signed message")]
+    verify: bool,
+
     #[clap(index = 1, required = true, help = "Recipient certificate ID")]
     recipient: String,
 }
@@ -143,20 +146,31 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     match args.command {
         CmsCommand::Encode(ref cmd) => {
-            let mut signers = store.find_cert_by_subject_str(&cmd.signer)?;
+            let mut recipients = Vec::new();
+            for rcpt in &cmd.recipients {
+                recipients.extend(store.find_cert_by_subject_str(rcpt)?.into_iter());
+            }
+            debug!("Acquired {} recipient certificate(s)", recipients.len());
 
-            if let Some(signer) = get_cert_with_key(&mut signers, args.silent) {
-                debug!("Acquired signer certificate for {}", cmd.signer);
+            let mut builder = CmsContent::builder().recipients(recipients);
 
-                let mut recipients = Vec::new();
-                for rcpt in &cmd.recipients {
-                    recipients.extend(store.find_cert_by_subject_str(rcpt)?.into_iter());
-                }
-                debug!("Acquired {} recipient certificate(s)", recipients.len());
+            if let Some(ref signer) = cmd.signer {
+                let mut signers = store.find_cert_by_subject_str(signer)?;
 
-                let key = signer.key().unwrap();
+                let Some(context) = get_cert_with_key(&mut signers, args.silent) else {
+                    return Err(Box::new(io::Error::new(
+                        io::ErrorKind::Other,
+                        format!("Cannot find signer certificate for {}", signer),
+                    )));
+                };
+
+                debug!("Acquired signer certificate for {}", signer);
+
+                let key = context.key().unwrap();
+
                 let key_prov = key.get_provider_name()?;
                 let key_name = key.get_name()?;
+
                 debug!("Acquired private key: {}: {}", key_prov, key_name);
 
                 if args.pfx_file.is_none() {
@@ -166,25 +180,20 @@ fn main() -> Result<(), Box<dyn Error>> {
                     }
                 }
 
-                let content = CmsContent::builder()
-                    .signer(signer)
-                    .recipients(recipients)
-                    .build();
+                builder = builder.signer(context);
+            }
 
-                let data = content.sign_and_encrypt(&source)?;
+            let content = builder.build();
 
-                if let Some(output_file) = args.output_file {
-                    fs::write(output_file, &data)?;
-                } else {
-                    io::stdout().write_all(&data)?;
-                }
+            let data = content.encode(&source)?;
+
+            if let Some(output_file) = args.output_file {
+                fs::write(output_file, &data)?;
             } else {
-                return Err(Box::new(io::Error::new(
-                    io::ErrorKind::Other,
-                    format!("Cannot find signer certificate for {}", cmd.signer),
-                )));
+                io::stdout().write_all(&data)?;
             }
         }
+
         CmsCommand::Decode(ref cmd) => {
             let mut recipients = store.find_cert_by_subject_str(&cmd.recipient)?;
             if let Some(cert) = get_cert_with_key(&mut recipients, args.silent) {
@@ -202,7 +211,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     }
                 }
 
-                let data = CmsContent::decrypt_and_verify(&store, &source)?;
+                let data = CmsContent::decode(&store, &source, cmd.verify)?;
 
                 if let Some(output_file) = args.output_file {
                     fs::write(output_file, &data)?;
