@@ -270,7 +270,7 @@ checksum = "7219d36b6eac893fa81e84ebe06485e7dcbb616177469b142df14f1f4deb1311"
 [[package]]
 name = "wincms"
 version = "0.1.0"
-source = "git+https://github.com/ancwrd1/wincms.git?branch=dev#8c41b6d8ce59a1be872823aaed5a9af61a474cea"
+source = "git+https://github.com/ancwrd1/wincms.git#13bb02e95eba58d490353cad18722af9819c29b5"
 dependencies = [
  "log",
  "widestring",

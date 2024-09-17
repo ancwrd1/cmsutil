@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-wincms = { git = "https://github.com/ancwrd1/wincms.git", branch = "dev" }
+wincms = { git = "https://github.com/ancwrd1/wincms.git" }
 clap = { version = "4", features = ["std", "derive"] }
 memmap2 = "0.9"
 log = "0.4"
