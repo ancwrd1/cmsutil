@@ -158,20 +158,19 @@ fn main() -> Result<(), Box<dyn Error>> {
                 let mut signers = store.find_cert_by_subject_str(signer)?;
 
                 let Some(context) = get_cert_with_key(&mut signers, args.silent) else {
-                    return Err(Box::new(io::Error::new(
-                        io::ErrorKind::Other,
-                        format!("Cannot find signer certificate for {}", signer),
+                    return Err(Box::new(io::Error::other(
+                        format!("Cannot find signer certificate for {signer}"),
                     )));
                 };
 
-                debug!("Acquired signer certificate for {}", signer);
+                debug!("Acquired signer certificate for {signer}");
 
                 let key = context.key().unwrap();
 
                 let key_prov = key.get_provider_name()?;
                 let key_name = key.get_name()?;
 
-                debug!("Acquired private key: {}: {}", key_prov, key_name);
+                debug!("Acquired private key: {key_prov}: {key_name}");
 
                 if args.pfx_file.is_none() {
                     if let Some(pin) = args.pin {
@@ -202,7 +201,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 let key = cert.key().unwrap();
                 let key_prov = key.get_provider_name()?;
                 let key_name = key.get_name()?;
-                debug!("Acquired private key: {}: {}", key_prov, key_name);
+                debug!("Acquired private key: {key_prov}: {key_name}");
 
                 if args.pfx_file.is_none() {
                     if let Some(pin) = args.pin {
@@ -219,8 +218,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     io::stdout().write_all(&data)?;
                 }
             } else {
-                return Err(Box::new(io::Error::new(
-                    io::ErrorKind::Other,
+                return Err(Box::new(io::Error::other(
                     format!("Cannot find recipient certificate for {}", cmd.recipient),
                 )));
             }
