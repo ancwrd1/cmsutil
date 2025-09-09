@@ -172,11 +172,11 @@ fn main() -> Result<(), Box<dyn Error>> {
 
                 debug!("Acquired private key: {key_prov}: {key_name}");
 
-                if args.pfx_file.is_none() {
-                    if let Some(pin) = args.pin {
-                        key.set_pin(&pin)?;
-                        debug!("Pin code set");
-                    }
+                if args.pfx_file.is_none()
+                    && let Some(pin) = args.pin
+                {
+                    key.set_pin(&pin)?;
+                    debug!("Pin code set");
                 }
 
                 builder = builder.signer(context);
@@ -204,11 +204,11 @@ fn main() -> Result<(), Box<dyn Error>> {
                     let key_name = key.get_name()?;
                     debug!("Acquired private key: {key_prov}: {key_name}");
 
-                    if args.pfx_file.is_none() {
-                        if let Some(pin) = args.pin {
-                            key.set_pin(&pin)?;
-                            debug!("Pin code set");
-                        }
+                    if args.pfx_file.is_none()
+                        && let Some(pin) = args.pin
+                    {
+                        key.set_pin(&pin)?;
+                        debug!("Pin code set");
                     }
 
                     let data = CmsContent::decode(&store, &source, cmd.verify)?;
