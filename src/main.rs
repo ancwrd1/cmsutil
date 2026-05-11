@@ -2,12 +2,12 @@ use std::{
     error::Error,
     fs,
     io::{self, Read, Write},
-    ops::Deref,
     path::PathBuf,
 };
 
 use clap::Parser;
-use log::debug;
+use tracing::debug;
+use tracing_subscriber::EnvFilter;
 use wincms::{
     cert::{CertContext, CertStore, CertStoreType},
     cms::CmsContent,
@@ -96,22 +96,6 @@ struct CmsDecodeCmd {
     recipient: String,
 }
 
-enum MessageSource {
-    File(memmap2::Mmap),
-    Stdin(Vec<u8>),
-}
-
-impl Deref for MessageSource {
-    type Target = [u8];
-
-    fn deref(&self) -> &Self::Target {
-        match self {
-            MessageSource::File(mmap) => mmap,
-            MessageSource::Stdin(data) => data,
-        }
-    }
-}
-
 fn get_cert_with_key(certs: &mut [CertContext], silent: bool) -> Option<CertContext> {
     certs
         .iter_mut()
@@ -121,16 +105,18 @@ fn get_cert_with_key(certs: &mut [CertContext], silent: bool) -> Option<CertCont
 fn main() -> Result<(), Box<dyn Error>> {
     let args: AppParams = AppParams::parse();
 
-    env_logger::init();
+    let subscriber = tracing_subscriber::fmt()
+        .with_env_filter(EnvFilter::from_default_env())
+        .finish();
+
+    tracing::subscriber::set_global_default(subscriber)?;
 
     let source = if let Some(input_file) = args.input_file {
-        let input_file = fs::File::open(input_file)?;
-        let mmap = unsafe { memmap2::MmapOptions::new().map(&input_file)? };
-        MessageSource::File(mmap)
+        fs::read(input_file)?
     } else {
         let mut data = Vec::new();
         io::stdin().read_to_end(&mut data)?;
-        MessageSource::Stdin(data)
+        data
     };
 
     let store = if let Some(ref path) = args.pfx_file {

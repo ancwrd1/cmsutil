@@ -6,6 +6,5 @@ edition = "2024"
 [dependencies]
 wincms = { git = "https://github.com/ancwrd1/wincms.git" }
 clap = { version = "4", features = ["std", "derive"] }
-memmap2 = "0.9"
-log = "0.4"
-env_logger = "0.11"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
